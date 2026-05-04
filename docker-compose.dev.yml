@@ -1,0 +1,43 @@
+services:
+  crediflow-identity-test:
+    image: xuantruong2204/crediflow-identity:dev
+    container_name: hdf-identity-test
+    restart: unless-stopped
+    ports:
+      - "8884:80"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:80
+
+      # Database — Test DB (port 55433)
+      ConnectionStrings__CrediFlowConnection: "Host=hdf-postgres18-test;Port=5432;Database=crediflow;Username=dev;Password=P&k24DLm!y3^5*4i;Maximum Pool Size=10;Minimum Pool Size=2;"
+
+      # JWT — dùng chung key với production
+      JwtSettings__SecretKey: "7woPzjOR06P5lrT%xQbM6NHayzvRh%^%BLGQ#r$mjAzWYKBRL#ODX#*lOMF$Z4o25z*$!LM$BeAfKi7Z4J7rplsxt07^EyKU0vfMhxJuHc7Y58%q2rcU4PqAf^xbi23E!"
+      JwtSettings__EcdsaPrivateKey: "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgu/ocXNIePPAbHRE41/stWVD+Nsnw6RXuE//KTBvukP2hRANCAAQzpsOIgHLo7cY7K8WjLiCbdYD3XmC9uJQuG9WzCmGiWgw1Z8SGZJB0W9k8nmqyuoMOj/zB6IxpryXU4XbcIhxI"
+      JwtSettings__EcdsaPublicKey: "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEM6bDiIBy6O3GOyvFoy4gm3WA915gvbiULhvVswpholoMNWfEhmSQdFvZPJ5qsrqDDo/8weiMaa8l1OF23CIcSA=="
+      JwtSettings__Issuer: "https://quanly.hdfinanceco.vn"
+      JwtSettings__Audience: "hdf.api.identity"
+      JwtSettings__AccessTokenExpirationMinutes: "30"
+      JwtSettings__RefreshTokenExpirationDays: "7"
+      JwtSettings__MaxFailedLoginAttempts: "10"
+      JwtSettings__LockoutDurationMinutes: "15"
+
+      # Logging — verbose hơn cho dev
+      Logging__LogLevel__Default: Information
+      Logging__LogLevel__Microsoft__AspNetCore: Warning
+      Logging__LogLevel__Microsoft__EntityFrameworkCore: Warning
+      Logging__LogLevel__CrediFlow: Debug
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+    networks:
+      - hdf-test-net
+
+networks:
+  hdf-test-net:
+    external: true
