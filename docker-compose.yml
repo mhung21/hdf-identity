@@ -1,0 +1,36 @@
+services:
+  crediflow-identity:
+    image: registry.lasiapp.vn:2105/crediflow-identity:1.0.0
+    container_name: hdf-identity
+    restart: always
+    ports:
+      - "8882:80"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+
+      # Database
+      ConnectionStrings__CrediFlowConnection: "Host=hdf-postgres18;Port=5432;Database=crediflow;Username=dev;Password=P&k24DLm!y3^5*4i;Maximum Pool Size=10;Minimum Pool Size=2;"
+
+      # JWT
+      JwtSettings__SecretKey: "7woPzjOR06P5lrT%xQbM6NHayzvRh%^%BLGQ#r$mjAzWYKBRL#ODX#*lOMF$Z4o25z*$!LM$BeAfKi7Z4J7rplsxt07^EyKU0vfMhxJuHc7Y58%q2rcU4PqAf^xbi23E!"
+      JwtSettings__EcdsaPrivateKey: "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgu/ocXNIePPAbHRE41/stWVD+Nsnw6RXuE//KTBvukP2hRANCAAQzpsOIgHLo7cY7K8WjLiCbdYD3XmC9uJQuG9WzCmGiWgw1Z8SGZJB0W9k8nmqyuoMOj/zB6IxpryXU4XbcIhxI"
+      JwtSettings__EcdsaPublicKey: "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEM6bDiIBy6O3GOyvFoy4gm3WA915gvbiULhvVswpholoMNWfEhmSQdFvZPJ5qsrqDDo/8weiMaa8l1OF23CIcSA=="
+      JwtSettings__Issuer: "https://quanly.hdfinanceco.vn"
+      JwtSettings__Audience: "hdf.api.identity"
+      JwtSettings__AccessTokenExpirationMinutes: "15"
+      JwtSettings__RefreshTokenExpirationDays: "7"
+      JwtSettings__MaxFailedLoginAttempts: "5"
+      JwtSettings__LockoutDurationMinutes: "30"
+
+      # Logging
+      Logging__LogLevel__Default: Warning
+      Logging__LogLevel__Microsoft__AspNetCore: Warning
+      Logging__LogLevel__Microsoft__EntityFrameworkCore: Warning
+      Logging__LogLevel__CrediFlow: Information
+
+    networks:
+      - hdf-net
+
+networks:
+  hdf-net:
+    external: true
