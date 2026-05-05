@@ -43,3 +43,4 @@ msbuild.err
 msbuild.wrn
 LASI.BE.API/appsettings.json
 appsettings.json
+!.gemini

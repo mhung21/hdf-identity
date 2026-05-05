@@ -177,7 +177,10 @@ builder.Services.AddCors(options =>
                 "https://localhost:3000",
                 "https://localhost:7085",
                 "https://quanly.hdfinanceco.vn",  // Production domain
-                "https://quanly-dev.hdfinanceco.vn" // Test domain
+                "https://quanly-dev.hdfinanceco.vn", // Test domain
+                "http://103.176.179.103:8080",    // Test frontend
+                "http://103.176.179.103:8883",    // Test API
+                "http://103.176.179.103:8884"     // Test Identity
             )
             .AllowAnyMethod()
             .AllowAnyHeader()
@@ -369,14 +372,16 @@ if (jwks != null)
     }).AllowAnonymous();
 
     // OpenID Connect discovery document — other services point Authority here
-    app.MapGet("/.well-known/openid-configuration", () =>
+    app.MapGet("/.well-known/openid-configuration", (HttpContext ctx) =>
     {
         var issuer = jwtSettings.Issuer;
+        // Use the request's own base URL for jwks_uri so internal Docker calls work
+        var baseUrl = $"{ctx.Request.Scheme}://{ctx.Request.Host}";
         return Results.Json(new
         {
             issuer,
-            jwks_uri                              = $"{issuer}/.well-known/jwks.json",
-            token_endpoint                        = $"{issuer}/api/auth/login",
+            jwks_uri                              = $"{baseUrl}/.well-known/jwks.json",
+            token_endpoint                        = $"{baseUrl}/api/auth/login",
             id_token_signing_alg_values_supported = new[] { "ES256" },
             subject_types_supported               = new[] { "public" },
             response_types_supported              = new[] { "token" }

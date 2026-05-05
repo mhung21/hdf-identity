@@ -1,6 +1,6 @@
 services:
   crediflow-identity:
-    image: registry.lasiapp.vn:2105/crediflow-identity:1.0.0
+    image: xuantruong2204/crediflow-identity:prod
     container_name: hdf-identity
     restart: always
     ports:
