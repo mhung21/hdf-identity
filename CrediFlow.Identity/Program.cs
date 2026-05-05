@@ -176,7 +176,8 @@ builder.Services.AddCors(options =>
                 "https://localhost:4200",
                 "https://localhost:3000",
                 "https://localhost:7085",
-                "https://quanly.hdfinanceco.vn"  // Production domain
+                "https://quanly.hdfinanceco.vn",  // Production domain
+                "https://quanly-dev.hdfinanceco.vn" // Test domain
             )
             .AllowAnyMethod()
             .AllowAnyHeader()
