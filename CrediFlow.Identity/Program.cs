@@ -101,7 +101,7 @@ builder.Services.AddAuthentication(options =>
     .AddJwtBearer(options =>
     {
         options.SaveToken = true;
-        options.RequireHttpsMetadata = !builder.Environment.IsDevelopment(); // Allow HTTP in dev
+        options.RequireHttpsMetadata = builder.Environment.IsProduction();
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
@@ -262,7 +262,7 @@ var app = builder.Build();
 // =========================================================
 
 // Development tools
-if (app.Environment.IsDevelopment())
+if (!app.Environment.IsProduction())
 {
     app.UseSwagger();
     app.UseSwaggerUI(c =>
