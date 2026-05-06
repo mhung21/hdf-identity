@@ -101,7 +101,7 @@ public class AuthController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error during token refresh");
-            return StatusCode(500, new { message = "An error occurred during token refresh" });
+            return StatusCode(500, new { message = $"An error occurred during token refresh: {ex.Message}\n{ex.StackTrace}" });
         }
     }
 

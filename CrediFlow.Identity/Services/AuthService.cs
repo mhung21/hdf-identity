@@ -467,22 +467,13 @@ public class AuthService : IAuthService
         if (creatorRole == UserRoleCode.ADMIN)
         {
             // ADMIN can create anyone but with validation
-            // ADMIN and REGIONAL_MANAGER must NOT have storeId (chi nhánh gắn qua bảng user_store_assignments)
-            // STORE_MANAGER and STAFF must have storeId
-            if ((requestedRole == UserRoleCode.ADMIN || requestedRole == UserRoleCode.REGIONAL_MANAGER)
-                && request.StoreId.HasValue)
-            {
-                throw new InvalidOperationException($"{requestedRole} users cannot be assigned to a single store");
-            }
-
             if (requestedRole == UserRoleCode.REGIONAL_MANAGER && requestedStoreIds.Count == 0)
             {
                 throw new InvalidOperationException("StoreIds are required when creating REGIONAL_MANAGER users");
             }
 
-            if (requestedRole != UserRoleCode.ADMIN
-                && requestedRole != UserRoleCode.REGIONAL_MANAGER
-                && !request.StoreId.HasValue)
+            // Mọi role đều cần storeId (ADMIN/REGIONAL_MANAGER được API tự gán "Tổng công ty")
+            if (!request.StoreId.HasValue)
             {
                 throw new InvalidOperationException($"{requestedRole} users must be assigned to a store");
             }
@@ -546,9 +537,7 @@ public class AuthService : IAuthService
             Email = request.Email,
             Phone = request.Phone,
             RoleCode = requestedRole.ToString(),
-            StoreId = requestedRole is UserRoleCode.ADMIN or UserRoleCode.REGIONAL_MANAGER
-                ? null
-                : request.StoreId,
+            StoreId = request.StoreId,
             IsActive = request.IsActive,
             MustChangePassword = request.MustChangePassword,
             FailedLoginAttempts = 0,

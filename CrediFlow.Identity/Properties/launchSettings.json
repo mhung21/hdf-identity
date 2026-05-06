@@ -6,7 +6,7 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
-      "applicationUrl": "https://localhost:51902;http://localhost:51903"
+      "applicationUrl": "https://localhost:52002;http://localhost:52003"
     },
     "CrediFlow.Identity-Dev": {
       "commandName": "Project",
@@ -14,7 +14,7 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Dev"
       },
-      "applicationUrl": "https://localhost:51902;http://localhost:51903"
+      "applicationUrl": "https://localhost:52002;http://localhost:52003"
     }
   }
 }
