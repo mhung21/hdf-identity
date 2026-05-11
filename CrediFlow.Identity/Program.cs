@@ -11,6 +11,8 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
+using Serilog;
+using Serilog.Sinks.Grafana.Loki;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -244,12 +246,28 @@ builder.Services.AddSwaggerGen(c =>
 //    .AddNpgSql(connectionString, name: "database");
 
 // =========================================================
-// LOGGING
+// SERILOG LOGGING
 // =========================================================
+var lokiUrl = builder.Configuration["Loki:Url"] ?? "http://hdf-loki:3100";
 
-builder.Logging.ClearProviders();
-builder.Logging.AddConsole();
-builder.Logging.AddDebug();
+builder.Host.UseSerilog((context, config) =>
+{
+    config
+        .ReadFrom.Configuration(context.Configuration)
+        .Enrich.FromLogContext()
+        .Enrich.WithProperty("service_name", "hdf-identity")
+        .Enrich.WithProperty("environment", context.HostingEnvironment.EnvironmentName)
+        .WriteTo.Console()
+        .WriteTo.GrafanaLoki(
+            uri: lokiUrl,
+            labels: new List<LokiLabel>
+            {
+                new() { Key = "service_name", Value = "hdf-identity" },
+                new() { Key = "environment", Value = context.HostingEnvironment.EnvironmentName }
+            },
+            propertiesAsLabels: new[] { "level" }
+        );
+});
 
 // =========================================================
 // APP BUILD
@@ -271,6 +289,9 @@ if (!app.Environment.IsProduction())
         c.RoutePrefix = string.Empty; // Serve Swagger at root
     });
 }
+
+// Serilog HTTP request logging (auto-log method, path, status code, duration)
+app.UseSerilogRequestLogging();
 
 // Security headers
 app.Use(async (context, next) =>
@@ -296,7 +317,7 @@ app.UseExceptionHandler(a => a.Run(async context =>
     
     var ex = exceptionHandlerPathFeature.Error;
 
-    Console.WriteLine($"Lỗi: {exceptionHandlerPathFeature.Path} - Message: {ex.Message} - InnerException: {ex.InnerException} - StackTrace: {ex.StackTrace}");
+    Log.Error(ex, "Unhandled exception at {Path}", exceptionHandlerPathFeature.Path);
 
     // var objLog = new
     // {
