@@ -290,8 +290,54 @@ if (!app.Environment.IsProduction())
     });
 }
 
-// Serilog HTTP request logging (auto-log method, path, status code, duration)
-app.UseSerilogRequestLogging();
+// ── Middleware: Capture request body cho POST/PUT/PATCH ──
+app.Use(async (context, next) =>
+{
+    var method = context.Request.Method;
+    if (method is "POST" or "PUT" or "PATCH" && context.Request.ContentType?.Contains("json") == true)
+    {
+        context.Request.EnableBuffering();
+        using var reader = new StreamReader(context.Request.Body, leaveOpen: true);
+        var body = await reader.ReadToEndAsync();
+        context.Request.Body.Position = 0;
+
+        if (body.Length > 0)
+        {
+            body = System.Text.RegularExpressions.Regex.Replace(
+                body, @"(?i)(""password""\s*:\s*"")[^""]*""", "$1***\"");
+            body = System.Text.RegularExpressions.Regex.Replace(
+                body, @"(?i)(""currentPassword""\s*:\s*"")[^""]*""", "$1***\"");
+            body = System.Text.RegularExpressions.Regex.Replace(
+                body, @"(?i)(""newPassword""\s*:\s*"")[^""]*""", "$1***\"");
+
+            if (body.Length > 4096) body = body[..4096] + "...(truncated)";
+            context.Items["RequestBody"] = body;
+        }
+    }
+    await next();
+});
+
+// Serilog HTTP request logging — enrich with curl-like info
+app.UseSerilogRequestLogging(opts =>
+{
+    opts.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
+    {
+        var req = httpContext.Request;
+        diagnosticContext.Set("RequestMethod", req.Method);
+        diagnosticContext.Set("RequestPath", req.Path.ToString());
+        diagnosticContext.Set("QueryString", req.QueryString.ToString());
+        diagnosticContext.Set("ContentType", req.ContentType ?? "");
+        diagnosticContext.Set("UserAgent", req.Headers["User-Agent"].ToString());
+        diagnosticContext.Set("ClientIP", httpContext.Connection.RemoteIpAddress?.ToString() ?? "");
+
+        if (httpContext.Items.TryGetValue("RequestBody", out var body) && body is string bodyStr)
+        {
+            diagnosticContext.Set("RequestBody", bodyStr);
+            var curl = $"curl -X {req.Method} '{req.Scheme}://{req.Host}{req.Path}{req.QueryString}' -H 'Content-Type: {req.ContentType}' -d '{bodyStr}'";
+            diagnosticContext.Set("CurlCommand", curl);
+        }
+    };
+});
 
 // Security headers
 app.Use(async (context, next) =>
