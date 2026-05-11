@@ -467,6 +467,13 @@ public class AuthService : IAuthService
         if (creatorRole == UserRoleCode.ADMIN)
         {
             // ADMIN can create anyone but with validation
+            // ADMIN / REGIONAL_MANAGER → tự gán chi nhánh "Tổng công ty"
+            if (requestedRole == UserRoleCode.ADMIN || requestedRole == UserRoleCode.REGIONAL_MANAGER)
+            {
+                var hqStore = await _context.Stores
+                    .FirstOrDefaultAsync(s => s.StoreName == StoreName.Headquarters);
+                request.StoreId = hqStore?.StoreId;
+            }
             if (requestedRole == UserRoleCode.REGIONAL_MANAGER && requestedStoreIds.Count == 0)
             {
                 throw new InvalidOperationException("StoreIds are required when creating REGIONAL_MANAGER users");
