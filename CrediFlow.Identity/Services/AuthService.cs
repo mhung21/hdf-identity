@@ -471,7 +471,7 @@ public class AuthService : IAuthService
             if (requestedRole == UserRoleCode.ADMIN || requestedRole == UserRoleCode.REGIONAL_MANAGER)
             {
                 var hqStore = await _context.Stores
-                    .FirstOrDefaultAsync(s => s.StoreName == StoreName.Headquarters);
+                    .FirstOrDefaultAsync(s => s.StoreName == "Tổng công ty");
                 request.StoreId = hqStore?.StoreId;
             }
             if (requestedRole == UserRoleCode.REGIONAL_MANAGER && requestedStoreIds.Count == 0)
