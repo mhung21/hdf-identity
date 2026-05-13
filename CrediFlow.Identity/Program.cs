@@ -149,6 +149,7 @@ builder.Services.AddAuthorization();
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IPasswordAuditService, PasswordAuditService>();
 
 // Cấu hình ForwardedHeaders để đọc IP thực từ nginx (X-Forwarded-For)
 // Tin tưởng tất cả các Private network thường dùng trong Docker/private proxy

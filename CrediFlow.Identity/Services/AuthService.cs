@@ -29,17 +29,20 @@ public class AuthService : IAuthService
     private readonly CrediflowContext _context;
     private readonly JwtSettings _jwtSettings;
     private readonly ILogger<AuthService> _logger;
+    private readonly IPasswordAuditService _passwordAuditService;
     private readonly ECDsa? _ecdsaPrivateKey;
     private readonly string? _kid; // RFC 7638 JWK thumbprint, matches JWKS endpoint
 
     public AuthService(
         CrediflowContext context,
         IOptions<JwtSettings> jwtSettings,
-        ILogger<AuthService> logger)
+        ILogger<AuthService> logger,
+        IPasswordAuditService passwordAuditService)
     {
         _context = context;
         _jwtSettings = jwtSettings.Value;
         _logger = logger;
+        _passwordAuditService = passwordAuditService;
 
         // Load ECDSA private key for ES256 signing if configured
         if (!string.IsNullOrEmpty(_jwtSettings.EcdsaPrivateKey))
@@ -384,6 +387,8 @@ public class AuthService : IAuthService
 
         // Revoke all existing sessions (force re-login with new password)
         await RevokeAllUserSessionsAsync(userId, "Password changed");
+
+        await _passwordAuditService.LogPasswordChangedAsync(userId, user.StoreId);
 
         return true;
     }
